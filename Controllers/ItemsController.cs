@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using CaBeta.ViewModels;
 using Newtonsoft.Json;
+using CaBeta.Data;
+using CaBeta.Data.Items;
+using AutoMapper;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -13,6 +16,17 @@ namespace CaBeta.Controllers
     [Route("api/[controller]")]
     public class ItemsController : Controller
     {
+        #region Private Fields
+        private ApplicationDbContext DbContext;
+        #endregion Private Fields
+        #region Constructor
+        public ItemsController(ApplicationDbContext context)
+        {
+            // Dependency Injetion
+            DbContext = context;
+        }
+        #endregion Constructor
+
         #region RESTful Conventions
 
         /// <summary>
@@ -33,12 +47,100 @@ namespace CaBeta.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            return new JsonResult(GetSampleItems()
-            .Where(i => i.Id == id)
-            .FirstOrDefault(),
-            DefaultJsonSettings);
+            var item = DbContext.Items.Where(i => i.Id == id).FirstOrDefault();
+            if (item != null)
+            {
+                return new JsonResult(ToItemViewMode(item), DefaultJsonSettings);
+            }
+            else return NotFound(new
+            {
+                Error = String.Format("Item ID {0} has not been found", id)
+            });
+        }
+
+
+
+        /// <summary>
+        /// POST: api/items
+        /// </summary>
+        /// <param name="ivm"></param>
+        /// <returns>Creates a new Item and return it accordingly.</returns>
+        [HttpPost()]
+        public IActionResult Add([FromBody]ItemViewModel ivm)
+        {
+            if (ivm != null)
+            {
+                // create a new Item with the client-sent json data
+                var item = ToItem(ivm);
+                // override any property that could be wise to set from server-side only
+                item.CreatedDate = item.LastModifiedDate = DateTime.Now;
+                // TODO: replace the following with the current user's id when authentication will be available.
+                item.UserId = DbContext.Users.Where(u => u.UserName == "Admin").FirstOrDefault().Id;
+                // add the new item
+                DbContext.Items.Add(item);
+                // persist the changes into the Database.
+                DbContext.SaveChanges();
+                // return the newly-created Item to the client.
+                return new JsonResult(ToItemViewModel(item), DefaultJsonSettings);
+            }
+            // return a generic HTTP Status 500 (Not Found) if the client payload is invalid.
+            return new StatusCodeResult(500);
+        }
+
+        /// <summary>
+        /// PUT: api/items/{id}
+        /// </summary>
+        /// <returns>Updates an existing Item and return it accordingly.</returns>
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, [FromBody]ItemViewModel ivm)
+        {
+            if (ivm != null)
+            {
+                var item = DbContext.Items.Where(i => i.Id == id).FirstOrDefault();
+                if (item != null)
+                {
+                    // handle the update (on per-property basis)
+                    item.UserId = ivm.UserId;
+                    item.Description = ivm.Description;
+                    item.Flags = ivm.Flags;
+                    item.Notes = ivm.Notes;
+                    item.Text = ivm.Text;
+                    item.Title = ivm.Title;
+                    item.Type = ivm.Type;
+                    // override any property that could be wise to set from server - side only
+                    item.LastModifiedDate = DateTime.Now;
+                    // persist the changes into the Database.
+                    DbContext.SaveChanges();
+                    // return the updated Item to the client.
+                    return new JsonResult(ToItemViewModel(item), DefaultJsonSettings);
+                }
+            }
+            // return a HTTP Status 404 (Not Found) if we couldn't find a suitable item.
+            return NotFound(new{Error = String.Format("Item ID {0} has not been found", id) });
+        }
+
+        /// <summary>
+        /// DELETE: api/items/{id}
+        /// </summary>
+        /// <returns>Deletes an Item, returning a HTTP status 200 (ok) when done.</returns>
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var item = DbContext.Items.Where(i => i.Id == id).FirstOrDefault();
+            if (item != null)
+            {
+                // remove the item to delete from the DbContext.
+                DbContext.Items.Remove(item);
+                // persist the changes into the Database.
+                DbContext.SaveChanges();
+                // return an HTTP Status 200 (OK).
+                return new OkResult();
+            }
+            // return a HTTP Status 404 (Not Found) if we couldn't find a suitable item.
+            return NotFound(new { Error = String.Format("Item ID {0} has not been found", id) });
         }
         #endregion
+
         #region Attribute-based Routing
         /// <summary>
         /// GET: api/items/GetLatest
@@ -59,9 +161,8 @@ namespace CaBeta.Controllers
         public IActionResult GetLatest(int n)
         {
             if (n > MaxNumberOfItems) n = MaxNumberOfItems;
-            var items = GetSampleItems().OrderByDescending(i =>
-            i.CreatedDate).Take(n);
-            return new JsonResult(items, DefaultJsonSettings);
+            var items = DbContext.Items.OrderByDescending(i => i.CreatedDate).Take(n).ToArray();
+            return new JsonResult(ToItemViewModelList(items), DefaultJsonSettings);
         }
         /// <summary>
         /// GET: api/items/GetMostViewed
@@ -82,9 +183,8 @@ namespace CaBeta.Controllers
         public IActionResult GetMostViewed(int n)
         {
             if (n > MaxNumberOfItems) n = MaxNumberOfItems;
-            var items = GetSampleItems().OrderByDescending(i =>
-            i.ViewCount).Take(n);
-            return new JsonResult(items, DefaultJsonSettings);
+            var items = DbContext.Items.OrderByDescending(i => i.ViewCount).Take(n).ToArray();
+            return new JsonResult(ToItemViewModelList(items), DefaultJsonSettings);
         }
         /// <summary>
         /// GET: api/items/GetRandom
@@ -105,12 +205,54 @@ namespace CaBeta.Controllers
         public IActionResult GetRandom(int n)
         {
             if (n > MaxNumberOfItems) n = MaxNumberOfItems;
-            var items = GetSampleItems().OrderBy(i =>
-            Guid.NewGuid()).Take(n);
-            return new JsonResult(items, DefaultJsonSettings);
+            var items = DbContext.Items.OrderBy(i => Guid.NewGuid()).Take(n).ToArray();
+            return new JsonResult(ToItemViewModelList(items), DefaultJsonSettings);
         }
         #endregion
         #region Private Members
+
+        /// <summary>
+        /// Maps a collection of Item entities into a list of ItemViewModel  objects.
+        /// </summary>
+        /// <param name="items">An IEnumerable collection of item entities</param>
+        /// <returns>a mapped list of ItemViewModel objects</returns>
+        private List<ItemViewModel> ToItemViewModelList(IEnumerable<Item> items)
+        {
+            var lst = new List<ItemViewModel>();
+            foreach (var i in items)
+                lst.Add(ToItemViewModel(i));
+            return lst;
+        }
+
+        /// <summary>
+        /// Maps Item into ItemViewModel object
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns>ItemViewModel object</returns>
+        private ItemViewModel ToItemViewModel(Item item)
+        {
+            //automapper binding
+            var config1 = new MapperConfiguration(cfg => cfg.CreateMap<Item, ItemViewModel>());
+            var mapper = config1.CreateMapper();
+            return mapper.Map<Item, ItemViewModel>(item);
+        }
+
+
+        /// <summary>
+        /// Maps ItemViewModel into Item object
+        /// </summary>
+        /// <param name="itemViewModel"></param>
+        /// <returns>Item object</returns>
+        private Item ToItem(ItemViewModel itemViewModel)
+        {
+            //automapper binding
+            var config2 = new MapperConfiguration(cfg => cfg.CreateMap<ItemViewModel, Item>());
+            var mapper = config2.CreateMapper();
+            return mapper.Map<ItemViewModel, Item>(itemViewModel);
+        }
+
+
+
         /// <summary>
         /// Generate a sample array of source Items to emulate a database (for testing purposes only).
         /// </summary>
@@ -135,6 +277,8 @@ namespace CaBeta.Controllers
             }
             return lst;
         }
+
+
         /// <summary>
         /// Returns a suitable JsonSerializerSettings object that can be used to generate the JsonResult return value for this Controller's methods.
         /// </summary>
