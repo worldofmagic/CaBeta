@@ -35,9 +35,48 @@ export class GameDetailComponent {
                 item => this.item = item
             );
         }
+        else if (id === 0) {
+            console.log("id is 0: adding a new item...");
+            this.item = new Item(0, "New Item", null);
+        }
         else {
             console.log("Invalid id: routing back to home...");
             this.router.navigate([""]);
         }
+    }
+
+    onInsert(item: Item) {
+        this.gameListService.add(item).subscribe(
+            (data) => {
+                this.item = data;
+                console.log("Item " + this.item.Id + " has been added.");
+                this.router.navigate([""]);
+            },
+            (error) => console.log(error)
+        );
+    }
+    onBack() {
+        this.router.navigate([""]);
+    }
+
+    onUpdate(item: Item) {
+        this.gameListService.update(item).subscribe(
+            (data) => {
+                this.item = data;
+                console.log("Item " + this.item.Id + " has been updated.");
+                this.router.navigate([""]);
+            },
+            (error) => console.log(error)
+        );
+    }
+    onDelete(item: Item) {
+        var id = item.Id;
+        this.gameListService.delete(id).subscribe(
+            (data) => {
+                console.log("Item " + id + " has been deleted.");
+                this.router.navigate([""]);
+            },
+            (error) => console.log(error)
+        );
     }
 }

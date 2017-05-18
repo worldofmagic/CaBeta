@@ -50,7 +50,7 @@ namespace CaBeta.Controllers
             var item = DbContext.Items.Where(i => i.Id == id).FirstOrDefault();
             if (item != null)
             {
-                return new JsonResult(ToItemViewMode(item), DefaultJsonSettings);
+                return new JsonResult(ToItemViewModel(item), DefaultJsonSettings);
             }
             else return NotFound(new
             {
