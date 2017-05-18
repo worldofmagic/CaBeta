@@ -1,11 +1,9 @@
-﻿<h2>Latest Items:</h2>
+﻿<h2>{{title}}</h2>
 <ul class="items">
     <li *ngFor="let item of items"
         [class.selected]="item === selectedItem"
         (click)="onSelect(item)">
-        <span>{{item.Id}}</span>
         <span>{{item.Title}}</span>
-        <span>{{item.Description}}</span>
     </li>
 </ul>
 <game-detail *ngIf="selectedItem" [item]="selectedItem"></game-detail>

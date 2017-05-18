@@ -1,11 +1,11 @@
-﻿import { Component, OnInit } from "@angular/core";
+﻿import { Component, Input, OnInit } from "@angular/core";
+import { Router } from "@angular/router";
 import { Item } from "../../constructors/item";
 import { GameListService } from "../../services/gamelist.service";
 
 @Component({
     selector: 'gamelist',
     template: require('./gamelist.component.html'),
-    providers: [GameListService],
     styles: [`
                 ul.items li {
                                 cursor: pointer;
@@ -16,12 +16,34 @@ import { GameListService } from "../../services/gamelist.service";
             `]
 })
 export class GameListComponent implements OnInit {
+    @Input() class: string;
+    title: string;
     selectedItem: Item;
     items: Item[];
     errorMessage: string;
-    constructor(private gameListService: GameListService) { }
+    constructor(private gameListService: GameListService, private router: Router) { }
     ngOnInit() {
-        this.getLatest();
+        console.log("ItemListComponent instantiated with the following type: "+this.class);
+        var s = null;
+        switch (this.class) {
+            case "latest":
+            default:
+                this.title = "Latest Items";
+                s = this.gameListService.getLatest();
+                break;
+            case "most-viewed":
+                this.title = "Most Viewed Items";
+                s = this.gameListService.getMostViewed();
+                break;
+            case "random":
+                this.title = "Random Items";
+                s = this.gameListService.getRandom();
+                break;
+        }
+        s.subscribe(
+            items => this.items = items,
+            error => this.errorMessage = <any>error
+        );
     }
     getLatest() {
         this.gameListService.getLatest()
@@ -32,6 +54,7 @@ export class GameListComponent implements OnInit {
     }
     onSelect(item: Item) {
         this.selectedItem = item;
-        console.log("item with Id " + this.selectedItem.Id + " has been selected.");
+        console.log("Item " + this.selectedItem.Id + " has been clicked:loading ItemDetailComponent...");
+        this.router.navigate(["item", this.selectedItem.Id]);
     }
 }

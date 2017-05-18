@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { GameListService} from './services/gamelist.service';
 
 import { AppComponent } from './components/app/app.component'
 import { NavMenuComponent } from './components/navmenu/navmenu.component';
@@ -32,9 +34,14 @@ export const sharedConfig: NgModule = {
             { path: 'fetch-data', component: FetchDataComponent },
             { path: 'gamelist', component: GameListComponent },
             { path: 'weather', component: WeatherComponent },
-            { path: 'gamedetail', component: WeatherComponent },
+            { path: "item/:id", component: GameDetailComponent },
             { path: '**', redirectTo: 'home' }
         ])
+    ],
+    exports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule
     ],
 
 };
