@@ -11,6 +11,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using CaBeta.Data;
+using CaBeta.Data.Users;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace CaBeta
 {
@@ -39,6 +41,15 @@ namespace CaBeta
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]) );
             // Add ApplicationDbContext's DbSeeder
             services.AddSingleton<DbSeeder>();
+
+            // Add Identity Services & Stores
+            services.AddIdentity<ApplicationUser, IdentityRole>(config => {
+                config.User.RequireUniqueEmail = true;
+                config.Password.RequireNonAlphanumeric = false;
+                config.Cookies.ApplicationCookie.AutomaticChallenge = false;
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

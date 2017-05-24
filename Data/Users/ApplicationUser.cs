@@ -1,5 +1,6 @@
 ﻿using CaBeta.Data.Comments;
 using CaBeta.Data.Items;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 namespace CaBeta.Data.Users
 {
-    public class ApplicationUser
+    public class ApplicationUser : IdentityUser
     {
         #region Constructor
         public ApplicationUser()
@@ -17,14 +18,14 @@ namespace CaBeta.Data.Users
         }
         #endregion Constructor
         #region Properties
-        [Key]
-        [Required]
-        public string Id { get; set; }
-        [Required]
-        [MaxLength(128)]
-        public string UserName { get; set; }
-        [Required]
-        public string Email { get; set; }
+        //[Key]
+        //[Required]
+        //public string Id { get; set; }
+        //[Required]
+        //[MaxLength(128)]
+        //public string UserName { get; set; }
+        //[Required]
+        //public string Email { get; set; }
         public string DisplayName { get; set; }
         public string Notes { get; set; }
         [Required]

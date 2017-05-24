@@ -11,7 +11,8 @@ import { FetchDataComponent } from './components/fetchdata/fetchdata.component';
 import { CounterComponent } from './components/counter/counter.component';
 import { GameListComponent } from './components/gamelist/gamelist.component';
 import { WeatherComponent } from './components/weather/weather.component';
-import { GameDetailComponent} from './components/gamedetail/gamedetail.component';
+import { GameDetailEditComponent } from './components/gamedetailedit/gamedetailedit.component';
+import { GameDetailViewComponent } from './components/gamedetailview/gamedetailview.component';
 
 export const sharedConfig: NgModule = {
     bootstrap: [ AppComponent ],
@@ -23,7 +24,8 @@ export const sharedConfig: NgModule = {
         HomeComponent,
         GameListComponent,
         WeatherComponent,
-        GameDetailComponent
+        GameDetailEditComponent,
+        GameDetailViewComponent
     ],
     imports: [
         FormsModule,
@@ -34,7 +36,8 @@ export const sharedConfig: NgModule = {
             { path: 'fetch-data', component: FetchDataComponent },
             { path: 'gamelist', component: GameListComponent },
             { path: 'weather', component: WeatherComponent },
-            { path: "item/:id", component: GameDetailComponent },
+            { path: "item/edit/:id", component: GameDetailEditComponent },
+            { path: "item/view/:id", component: GameDetailViewComponent },
             { path: '**', redirectTo: 'home' }
         ])
     ],

@@ -4,25 +4,66 @@ import { Router, ActivatedRoute } from "@angular/router";
 import { GameListService } from "../../services/gamelist.service";
 
 @Component({
-    selector: "game-detail",
-    template: require('./gamedetail.component.html'),
+    selector: "game-detail-edit",
+    template: require('./gamedetailedit.component.html'),
     styles: [`
-        .item-details {
-            margin: 5px;
-            padding: 5px 10px;
-            border: 1px solid black;
+            .item-container {
+            width: 600px;
+            }
+            .item-tab-menu {
+            margin-right: 30px;
+            }
+            .item-tab-menu span {
             background-color: #dddddd;
-            width: 300px;
-        }
-        .item-details * {
+            border: 1px solid #666666;
+            border-bottom: 0;
+            cursor: pointer;
+            display: block;
+            float: right;
+            margin: 0 0 -1px 5px;
+            padding: 5px 10px 4px 10px;
+            text-align: center;
+            width: 60px;
+            }
+            .item-tab-menu span.selected {
+            background-color: #eeeeee;
+            cursor: auto;
+            font-weight: bold;
+            padding-bottom: 5px;
+            }
+            .item-details {
+            background-color: #eeeeee;
+            border: 1px solid black;
+            clear: both;
+            margin: 0;
+            padding: 5px 10px;
+            }
+            .item-details * {
             vertical-align: middle;
-        }
-        .item-details ul li {
+            }
+            .item-details .mode {
+            font-size: 0.8em;
+            color: #777777;
+            }
+            .item-details ul li {
             padding: 5px 0;
-        }
+            }
+            .item-details input[type="text"] {
+            display: block;
+            width: 100%;
+            }
+            .item-details textarea {
+            display: block;
+            width: 100%;
+            height: 60px;
+            }
+            .commands {
+            text-align: right;
+            margin: 10px 20px 10px 10px;
+            }
 `]
 })
-export class GameDetailComponent {
+export class GameDetailEditComponent {
     @Input("item") item: Item;
     constructor(private gameListService: GameListService,
         private router: Router,
@@ -57,6 +98,10 @@ export class GameDetailComponent {
     }
     onBack() {
         this.router.navigate([""]);
+    }
+
+    onItemDetailView(item: Item) {
+        this.router.navigate(["item/view", item.Id]);
     }
 
     onUpdate(item: Item) {

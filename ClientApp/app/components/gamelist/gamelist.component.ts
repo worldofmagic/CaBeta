@@ -54,7 +54,7 @@ export class GameListComponent implements OnInit {
     }
     onSelect(item: Item) {
         this.selectedItem = item;
-        console.log("Item " + this.selectedItem.Id + " has been clicked:loading ItemDetailComponent...");
-        this.router.navigate(["item", this.selectedItem.Id]);
+        console.log("Item " + this.selectedItem.Id + " has been clicked:loading Item Viewer...");
+        this.router.navigate(["item/view", this.selectedItem.Id]);
     }
 }
