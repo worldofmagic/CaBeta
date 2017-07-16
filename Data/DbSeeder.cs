@@ -45,10 +45,10 @@ public class DbSeeder
         string role_Administrators = "Administrators";
         string role_Registered = "Registered";
         //Create Roles (if they doesn't exist yet)
-        if (!await RoleManager.RoleExistsAsync(role_Administrators)) await
-        RoleManager.CreateAsync(new IdentityRole(role_Administrators));
-        if (!await RoleManager.RoleExistsAsync(role_Registered)) await
-        RoleManager.CreateAsync(new IdentityRole(role_Registered));
+        if (!await RoleManager.RoleExistsAsync(role_Administrators))
+            await RoleManager.CreateAsync(new IdentityRole(role_Administrators));
+        if (!await RoleManager.RoleExistsAsync(role_Registered))
+            await RoleManager.CreateAsync(new IdentityRole(role_Registered));
         // Create the "Admin" ApplicationUser account (if it doesn't exist already)
         var user_Admin = new ApplicationUser()
         {
@@ -128,7 +128,7 @@ public class DbSeeder
         // local variables
         DateTime createdDate = new DateTime(2016, 03, 01, 12, 30, 00);
         DateTime lastModifiedDate = DateTime.Now;
-        var authorId = DbContext.Users.Where(u => u.UserName == "Mephistoyzh").FirstOrDefault().Id;
+        var authorId = DbContext.Users.Where(u => u.UserName == "admin").FirstOrDefault().Id;
 #if DEBUG
         var num = 1000; // create 1000 sample items
         for (int id = 1; id <= num; id++)
@@ -245,8 +245,7 @@ public class DbSeeder
             ItemId = itemId,
             UserId = authorId,
             ParentId = null,
-            Text = String.Format("Sample comment #{0} for the item #{1}",
-        n, itemId),
+            Text = String.Format("Sample comment #{0} for the item #{1}",n, itemId),
             CreatedDate = createdDate,
             LastModifiedDate = createdDate
         };

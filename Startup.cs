@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.Webpack;
@@ -13,6 +10,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using CaBeta.Data;
 using CaBeta.Data.Users;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using CaBeta.Classes;
+using Microsoft.IdentityModel.Tokens;
 
 namespace CaBeta
 {
@@ -37,6 +36,16 @@ namespace CaBeta
             services.AddMvc();
             // Add EntityFramework's Identity support.
             services.AddEntityFramework();
+
+            // Add Identity Services & Stores
+            services.AddIdentity<ApplicationUser, IdentityRole>(config => {
+                config.User.RequireUniqueEmail = true;
+                config.Password.RequireNonAlphanumeric = false;
+                config.Cookies.ApplicationCookie.AutomaticChallenge = false;
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
             // Add ApplicationDbContext.
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]) );
             // Add ApplicationDbContext's DbSeeder
@@ -71,6 +80,24 @@ namespace CaBeta
             }
 
             app.UseStaticFiles();
+
+            // Add a custom Jwt Provider to generate Tokens
+            app.UseJwtProvider();
+            // Add the Jwt Bearer Header Authentication to validate Tokens
+            app.UseJwtBearerAuthentication(new JwtBearerOptions()
+            {
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true,
+                RequireHttpsMetadata = false,
+                TokenValidationParameters = new TokenValidationParameters()
+                {
+                    IssuerSigningKey = JwtProvider.SecurityKey,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = JwtProvider.Issuer,
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                }
+            });
 
             app.UseMvc(routes =>
             {
