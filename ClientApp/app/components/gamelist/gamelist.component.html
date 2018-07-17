@@ -1,9 +1,0 @@
-﻿<h2>{{title}}</h2>
-<ul class="items">
-    <li *ngFor="let item of items"
-        [class.selected]="item === selectedItem"
-        (click)="onSelect(item)">
-        <span>{{item.Title}}</span>
-    </li>
-</ul>
-<game-detail-edit *ngIf="selectedItem" [item]="selectedItem"></game-detail-edit>
